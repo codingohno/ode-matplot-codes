@@ -3,22 +3,19 @@ import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 from math import sqrt
+from matplotlib.animation import PillowWriter
 
 #getting inputs from user
 A_input=input("what values of A:(ex:1,3,5)").split(',')
 A_input=[int(x) for x in A_input]
 print(A_input)
+k_input=input("v value:(ex:1,2,3)").split(',')
+k_input=[int(x) for x in k_input]
 
-k_input=input("v value:(ex:1)").split();
-k_input=int(k_input[0])
 
-
-#the parameters that can be changed by user
-#the A value that can be changed by user
-k=k_input
-V=1
 #resolution
-t = np.linspace(0,3.5,50)#solve for 100 points between 0 to 1
+V=1
+t = np.linspace(0,6,10)#solve for 100 points between 0 to 1
 
 
 #ultility functions
@@ -27,17 +24,17 @@ t = np.linspace(0,3.5,50)#solve for 100 points between 0 to 1
 #    | x |        | dx/dt |
 # s= |   | ,ds/dt=|       |
 #    | y |        | dy/dt |
-def dsdt(t,s):
-    #unpack the s into x and y
-    x,y=s
-    vt_y=V*t-y
-    dxdt=(x/sqrt(x**2+vt_y**2))*-k*V
-    dydt=(vt_y/sqrt(x**2+vt_y**2))*k*V
+def solve_and_plot_single(chosen_A,k):
+    #inner function
+    def dsdt(t,s):
+        #unpack the s into x and y
+        x,y=s
+        vt_y=V*t-y
+        dxdt=(x/sqrt(x**2+vt_y**2))*-k*V
+        dydt=(vt_y/sqrt(x**2+vt_y**2))*k*V
 
-    #return the differentiation of the column vector
-    return [dxdt,dydt]
-
-def solve_and_plot_single(chosen_A):
+        #return the differentiation of the column vector
+        return [dxdt,dydt]
 
     # picking init conditions
     y0=0
@@ -61,7 +58,8 @@ def solve_and_plot_single(chosen_A):
     # plt.ylabel('$x or y$',fontsize=22)
     # plt.xlabel("$t$",fontsize=22)
     # plt.show()
-    plt.plot(x_arr,y_arr)
+    plt.plot(x_arr,y_arr,label=f"A={chosen_A} k={k}")
+    
 
 
 #comparision for the moving human
@@ -75,14 +73,17 @@ plt.plot(len(human_arr)*[0],human_arr)
 #plot the dog
 #different A
 for a_val in A_input:
-    solve_and_plot_single(a_val)
+    for k_val in k_input:
+        solve_and_plot_single(a_val,k_val)
 
 
 
 
 #setting the label for axes
-plt.ylabel('$y$',fontsize=22)
-plt.xlabel("$x$",fontsize=22)
+plt.ylabel('y',fontsize=22)
+plt.xlabel("x",fontsize=22)
 
 #show the plot
+plt.legend()
 plt.show()
+
