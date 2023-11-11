@@ -4,23 +4,26 @@ from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 from math import sqrt
 from matplotlib.animation import PillowWriter
+from matplotlib.animation import FuncAnimation
 
-#figure out later
-metadata=dict(title='Movie',artist='codinglikemad')
-writer=PillowWriter(fps=15,metadata=metadata)
-fig=plt.figure()
+
+
+#modification
+fig, ax = plt.subplots()
 
 #getting inputs from user
 A_input=input("what values of A:(ex:1,3,5)").split(',')
 A_input=[int(x) for x in A_input]
-print(A_input)
 k_input=input("v value:(ex:1,2,3)").split(',')
 k_input=[int(x) for x in k_input]
 
 
-#resolution
-V=1
-t = np.linspace(0,6,10)#solve for 100 points between 0 to 1
+#global
+V=1 #v resolution
+t = np.linspace(0,5,100)#time resolution
+dog_dot=[]#references for moving dots
+dog_result_x=[]
+dog_result_y=[]
 
 
 #ultility functions
@@ -50,21 +53,22 @@ def solve_and_plot_single(chosen_A,k):
     # solve_ivp(with inti cond)
     solution_s=solve_ivp(dsdt,t_span=(0,max(t)),y0=(x0,y0),t_eval=t)
 
-    #extract the x and y values
-    #the T is the transpose 
+    #extract the x and y values and store globally
     x_arr=solution_s.y[0]
     y_arr=solution_s.y[1]
+    dog_result_x.append(x_arr)
+    dog_result_y.append(y_arr)
 
-
-    #plot the graph to t(not used for observing position to time relationship)
-    # plt.plot(x_arr,t,'--')
-    # plt.plot(y_arr,t)
-    # plt.plot(human_arr,t)
-    # plt.ylabel('$x or y$',fontsize=22)
-    # plt.xlabel("$t$",fontsize=22)
-    # plt.show()
+    #plot the line and the dot
     plt.plot(x_arr,y_arr,label=f"A={chosen_A} k={k}")
+    temp,=plt.plot([x_arr[0]],[y_arr[0]],'o')
+    dog_dot.append(temp)
     
+# #plot the dog multiple
+#different A
+for a_val in A_input:
+    for k_val in k_input:
+        solve_and_plot_single(a_val,k_val)
 
 
 #comparision for the moving human
@@ -74,35 +78,21 @@ def dhumandt(t,human_pos):
 solution_human=solve_ivp(dhumandt,t_span=(0,max(t)),y0=[0],t_eval=t)
 human_arr_y=solution_human.y[0]
 human_arr_x=len(human_arr_y)*[0]
-print(type(human_arr_y))
-print(human_arr_x)
-# human_plot=plt.plot(len(human_arr)*[0],human_arr)
-human_plot,=plt.plot([],[])
+human_plot=plt.plot(human_arr_x,human_arr_y)
+human_dot,=plt.plot([human_arr_x[0]],[human_arr_y[0]],'o')
 
-#moving plt
-xlist=[]
-ylist=[]
+def my_update(frame):
+    human_dot.set_data([human_arr_x[frame]],[human_arr_y[frame]])
+    for i in range (len(dog_dot)):
+        plot_dot=dog_dot[i]
+        plot_dot.set_data([dog_result_x[i][frame]],[dog_result_y[i][frame]])
+    return (human_dot,)+tuple(dog_dot) #unpacked tuple
 
-with writer.saving(fig,"humanplot.gif",len(t)):
-    for i in range(len(t)):
-        xlist.append(human_arr_x[i])
-        ylist.append(human_arr_y[i])
-
-        human_plot.set_data(xlist,ylist)
-
-        writer.grab_frame()
+_animation = FuncAnimation(fig, my_update, frames=list(range(len(t))), interval=20, repeat=True)
 
 
 
-        
 
-
-
-#plot the dog
-#different A
-for a_val in A_input:
-    for k_val in k_input:
-        solve_and_plot_single(a_val,k_val)
 
 
 
@@ -115,3 +105,4 @@ plt.xlabel("x",fontsize=22)
 plt.legend()
 plt.show()
 
+####################################
