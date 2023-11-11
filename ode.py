@@ -5,6 +5,11 @@ from scipy.integrate import solve_ivp
 from math import sqrt
 from matplotlib.animation import PillowWriter
 
+#figure out later
+metadata=dict(title='Movie',artist='codinglikemad')
+writer=PillowWriter(fps=15,metadata=metadata)
+fig=plt.figure()
+
 #getting inputs from user
 A_input=input("what values of A:(ex:1,3,5)").split(',')
 A_input=[int(x) for x in A_input]
@@ -67,8 +72,31 @@ def solve_and_plot_single(chosen_A,k):
 def dhumandt(t,human_pos):
     return V
 solution_human=solve_ivp(dhumandt,t_span=(0,max(t)),y0=[0],t_eval=t)
-human_arr=solution_human.y[0]
-plt.plot(len(human_arr)*[0],human_arr)
+human_arr_y=solution_human.y[0]
+human_arr_x=len(human_arr_y)*[0]
+print(type(human_arr_y))
+print(human_arr_x)
+# human_plot=plt.plot(len(human_arr)*[0],human_arr)
+human_plot,=plt.plot([],[])
+
+#moving plt
+xlist=[]
+ylist=[]
+
+with writer.saving(fig,"humanplot.gif",len(t)):
+    for i in range(len(t)):
+        xlist.append(human_arr_x[i])
+        ylist.append(human_arr_y[i])
+
+        human_plot.set_data(xlist,ylist)
+
+        writer.grab_frame()
+
+
+
+        
+
+
 
 #plot the dog
 #different A
